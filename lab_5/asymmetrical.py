@@ -1,6 +1,10 @@
+import logging
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey, RSAPrivateKey
+
+
+logger = logging.getLogger(__name__)
 
 
 class AsymmetricCryptography:
@@ -16,6 +20,7 @@ class AsymmetricCryptography:
         :return: зашифрованные данные
         """
         try:
+            logger.debug(f"RSA encryption started, data size: {len(data)} bytes")
             encrypted_data = public_key.encrypt(
                 data,
                 padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),
@@ -23,10 +28,10 @@ class AsymmetricCryptography:
                              label=None)
             )
 
+            logger.debug(f"RSA encryption completed, encrypted data size: {len(encrypted_data)} bytes")
             return encrypted_data
         except Exception as e:
-            print(f"Encryption error: {e}")
-
+            logger.error(f"Encryption error: {e}")
 
     @staticmethod
     def decrypt(private_key: RSAPrivateKey, encrypted_data: bytes) -> bytes:
@@ -37,6 +42,7 @@ class AsymmetricCryptography:
         :return: дешифрованные данные
         """
         try:
+            logger.debug(f"RSA decryption started, encrypted data size: {len(encrypted_data)} bytes")
             decrypted_data = private_key.decrypt(
                 encrypted_data,
                 padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),
@@ -44,6 +50,7 @@ class AsymmetricCryptography:
                              label=None)
             )
 
+            logger.debug(f"RSA decryption completed, decrypted data size: {len(decrypted_data)} bytes")
             return decrypted_data
         except Exception as e:
-            print(f"Decryption error: {e}")
+            logger.error(f"Decryption error: {e}")

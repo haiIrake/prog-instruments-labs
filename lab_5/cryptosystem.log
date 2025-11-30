@@ -1,0 +1,67 @@
+2025-11-30 22:35:45,265 - file_processing - DEBUG - Loading configuration from settings.json
+2025-11-30 22:35:45,265 - file_processing - DEBUG - Configuration from settings.json was successfully loaded
+2025-11-30 22:35:45,265 - main - INFO - Parsing command line arguments
+2025-11-30 22:35:45,282 - main - INFO - Key generation mode started
+2025-11-30 22:35:45,282 - generate_keys - DEBUG - Generating symmetric encryption key
+2025-11-30 22:35:45,282 - generate_keys - DEBUG - Symmetric encryption key was successfully generated
+2025-11-30 22:35:45,282 - generate_keys - DEBUG - Generating RSA keys
+2025-11-30 22:35:45,435 - generate_keys - DEBUG - RSA keys were successfully generated
+2025-11-30 22:35:45,435 - generate_keys - DEBUG - Encrypting symmetric encryption key
+2025-11-30 22:35:45,435 - asymmetrical - DEBUG - RSA encryption started, data size: 32 bytes
+2025-11-30 22:35:45,441 - asymmetrical - DEBUG - RSA encryption completed, encrypted data size: 256 bytes
+2025-11-30 22:35:45,441 - generate_keys - DEBUG - Symmetric encryption key was successfully encrypted
+2025-11-30 22:35:45,441 - file_processing - DEBUG - Saving public key to public.pem
+2025-11-30 22:35:45,441 - file_processing - DEBUG - Public key was successfully saved to public.pem
+2025-11-30 22:35:45,441 - file_processing - DEBUG - Saving private key to private.pem
+2025-11-30 22:35:45,441 - file_processing - DEBUG - Private key was successfully saved to private.pem
+2025-11-30 22:35:45,441 - main - DEBUG - Saving symmetric encryption key to symmetric.bin
+2025-11-30 22:35:45,441 - file_processing - DEBUG - Writing binary file: symmetric.bin, size: 256 bytes
+2025-11-30 22:35:45,441 - file_processing - DEBUG - Binary file symmetric.bin was successfully written
+2025-11-30 22:35:45,441 - main - DEBUG - Symmetric encryption key was successfully saved to symmetric.bin
+2025-11-30 22:35:45,441 - main - INFO - Keys were successfully generated and saved to public.pem, private.pem, symmetric.bin
+2025-11-30 22:35:49,215 - file_processing - DEBUG - Loading configuration from settings.json
+2025-11-30 22:35:49,215 - file_processing - DEBUG - Configuration from settings.json was successfully loaded
+2025-11-30 22:35:49,215 - main - INFO - Parsing command line arguments
+2025-11-30 22:35:49,225 - main - INFO - Encryption mode started
+2025-11-30 22:35:49,225 - file_processing - DEBUG - Loading private key from private.pem
+2025-11-30 22:35:49,273 - file_processing - DEBUG - Private key from private.pem was successfully loaded
+2025-11-30 22:35:49,275 - main - DEBUG - Loading symmetric encryption key from symmetric.bin
+2025-11-30 22:35:49,275 - file_processing - DEBUG - Reading binary file: symmetric.bin
+2025-11-30 22:35:49,275 - file_processing - DEBUG - Binary file symmetric.bin was read, size: 256 bytes
+2025-11-30 22:35:49,275 - main - DEBUG - Symmetric encryption key from symmetric.bin was successfully loaded
+2025-11-30 22:35:49,275 - main - DEBUG - Decrypting symmetric encryption key
+2025-11-30 22:35:49,275 - asymmetrical - DEBUG - RSA decryption started, encrypted data size: 256 bytes
+2025-11-30 22:35:49,275 - asymmetrical - DEBUG - RSA decryption completed, decrypted data size: 32 bytes
+2025-11-30 22:35:49,275 - main - DEBUG - Symmetric encryption key was successfully decrypted
+2025-11-30 22:35:49,275 - file_processing - DEBUG - Reading binary file: input.txt
+2025-11-30 22:35:49,275 - file_processing - DEBUG - Binary file input.txt was read, size: 2712 bytes
+2025-11-30 22:35:49,275 - symmetrical - DEBUG - ChaCha20 encryption started, plaintext size: 2712 symbols
+2025-11-30 22:35:49,285 - symmetrical - DEBUG - ChaCha20 encryption completed, ciphertext size: 2712 bytes
+2025-11-30 22:35:49,285 - file_processing - DEBUG - Writing binary file: encrypted.bin, size: 2712 bytes
+2025-11-30 22:35:49,285 - file_processing - DEBUG - Binary file encrypted.bin was successfully written
+2025-11-30 22:35:49,285 - file_processing - DEBUG - Writing binary file: nonce.bin, size: 16 bytes
+2025-11-30 22:35:49,285 - file_processing - DEBUG - Binary file nonce.bin was successfully written
+2025-11-30 22:35:49,285 - main - INFO - File was successfully encrypted and saved to encrypted.bin
+2025-11-30 22:35:52,916 - file_processing - DEBUG - Loading configuration from settings.json
+2025-11-30 22:35:52,916 - file_processing - DEBUG - Configuration from settings.json was successfully loaded
+2025-11-30 22:35:52,916 - main - INFO - Parsing command line arguments
+2025-11-30 22:35:52,931 - main - INFO - Decryption mode started
+2025-11-30 22:35:52,931 - file_processing - DEBUG - Loading private key from private.pem
+2025-11-30 22:35:52,975 - file_processing - DEBUG - Private key from private.pem was successfully loaded
+2025-11-30 22:35:52,975 - main - DEBUG - Loading symmetric encryption key from symmetric.bin
+2025-11-30 22:35:52,975 - file_processing - DEBUG - Reading binary file: symmetric.bin
+2025-11-30 22:35:52,975 - file_processing - DEBUG - Binary file symmetric.bin was read, size: 256 bytes
+2025-11-30 22:35:52,975 - main - DEBUG - Symmetric encryption key from symmetric.bin was successfully loaded
+2025-11-30 22:35:52,975 - main - DEBUG - Decrypting symmetric encryption key
+2025-11-30 22:35:52,975 - asymmetrical - DEBUG - RSA decryption started, encrypted data size: 256 bytes
+2025-11-30 22:35:52,979 - asymmetrical - DEBUG - RSA decryption completed, decrypted data size: 32 bytes
+2025-11-30 22:35:52,979 - main - DEBUG - Symmetric encryption key was successfully decrypted
+2025-11-30 22:35:52,979 - file_processing - DEBUG - Reading binary file: encrypted.bin
+2025-11-30 22:35:52,979 - file_processing - DEBUG - Binary file encrypted.bin was read, size: 2712 bytes
+2025-11-30 22:35:52,979 - file_processing - DEBUG - Reading binary file: nonce.bin
+2025-11-30 22:35:52,979 - file_processing - DEBUG - Binary file nonce.bin was read, size: 16 bytes
+2025-11-30 22:35:52,979 - symmetrical - DEBUG - ChaCha20 decryption started, ciphertext size: 2712 bytes
+2025-11-30 22:35:52,985 - symmetrical - DEBUG - ChaCha20 decryption completed, plaintext size: 2712 symbols
+2025-11-30 22:35:52,985 - file_processing - DEBUG - Writing text file: decrypted.txt, size: 1469 symbols
+2025-11-30 22:35:52,985 - file_processing - DEBUG - Text file decrypted.txt was successfully written
+2025-11-30 22:35:52,985 - main - INFO - File was successfully decrypted and saved to decrypted.txt
