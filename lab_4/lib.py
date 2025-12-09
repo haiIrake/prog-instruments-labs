@@ -23,7 +23,7 @@ Overview:
 
 import math
 import random
-from typing import List
+from typing import List, Union
 
 
 class Vector(object):
@@ -45,12 +45,12 @@ class Vector(object):
         copy() : copies this vector and returns it.
         changeComponent(pos,value) : changes the specified component.
     """
-    def __init__(self,components=[]):
+    def __init__(self, components: List[float] = None):
         """
             input: components or nothing
             simple constructor for init the vector
         """
-        self.__components = list(components)
+        self.__components = list(components) if components else []
 
     def set(self, components: List[float]) -> None:
         """
@@ -63,11 +63,11 @@ class Vector(object):
 
         self.__components = list(components)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """
             returns a string representation of the vector
         """
-        return "(" + ",".join(map(str, self.__components)) + ")"
+        return f"({", ".join(str(c) for c in self.__components)})"
 
     def component(self, index: int) -> float:
         """
@@ -82,19 +82,17 @@ class Vector(object):
 
         return self.__components[index]
 
-    def __len__(self):
+    def __len__(self) -> int:
         """
             returns the size of the vector
         """
         return len(self.__components)
-    def eulidLength(self):
+
+    def eulidLength(self) -> float:
         """
             returns the eulidean length of the vector
         """
-        summe = 0
-        for c in self.__components:
-            summe += c**2
-        return math.sqrt(summe)
+        return math.sqrt(sum(c ** 2 for c in self.__components))
 
     def __add__(self, other: "Vector") -> "Vector":
         """
@@ -120,84 +118,101 @@ class Vector(object):
         result = [self.__components[i] - other.component(i) for i in range(len(self))]
         return Vector(result)
 
-    def __mul__(self, other):
+    def __mul__(self, other: Union["Vector", int, float]) -> Union["Vector", float]:
         """
             mul implements the scalar multiplication 
             and the dot-product
         """
         if isinstance(other, float) or isinstance(other, int):
-            ans = [c*other for c in self.__components]
-            return ans
+            return Vector([c * other for c in self.__components])
+
         elif isinstance(other, Vector):
             if len(self) != len(other):
                 raise ValueError(f"Cannot compute dot product of vectors with different dimensions: "
                                  f"{len(self)} and {len(other)}")
-            size = len(self)
-            summe = 0
-            for i in range(size):
-                summe += self.__components[i] * other.component(i)
-            return summe
+
+            return sum(self.__components[i] * other.component(i) for i in range(len(self)))
+
         else:
             raise TypeError(f"Unsupported operand type(s) for *: 'Vector' and '{type(other).__name__}'")
 
-    def copy(self):
+    def copy(self) -> "Vector":
         """
             copies this vector and returns it.
         """
         return Vector(self.__components)
-    def changeComponent(self,pos,value):
+
+    def changeComponent(self, position: int, value: float) -> None:
         """
             input: an index (pos) and a value
             changes the specified component (pos) with the
             'value'
         """
-        #precondition
-        assert (-len(self.__components) <= pos < len(self.__components))
-        self.__components[pos] = value
-    
-def zeroVector(dimension):
+        if not -len(self.__components) <= position < len(self.__components):
+            raise IndexError(f"Position {position} out of range")
+
+        self.__components[position] = value
+
+
+def zeroVector(dimension: int) -> Vector:
     """
         returns a zero-vector of size 'dimension'
-    """        
-    #precondition
-    assert(isinstance(dimension,int))
-    return Vector([0]*dimension)
+    """
+    if not isinstance(dimension, int):
+        raise TypeError(f"Dimension must be an integer, got {type(dimension).__name__}")
+
+    if dimension <= 0:
+        raise ValueError(f"Dimension must be positive, got {dimension}")
+
+    return Vector([0.0] * dimension)
 
 
-def unitBasisVector(dimension,pos):
+def unitBasisVector(dimension: int, position: int) -> Vector:
     """
         returns a unit basis vector with a One 
         at index 'pos' (indexing at 0)
     """
-    #precondition
-    assert(isinstance(dimension,int) and (isinstance(pos,int)))
-    ans = [0]*dimension
-    ans[pos] = 1
-    return Vector(ans)
-        
+    if not isinstance(dimension, int) or not isinstance(position, int):
+        raise TypeError("Both dimension and position must be integers")
 
-def axpy(scalar,x,y):
+    if not 0 <= position < dimension:
+        raise IndexError(f"Position {position} out of range for dimension {dimension}")
+
+    components = [0.0] * dimension
+    components[position] = 1.0
+    return Vector(components)
+
+
+def axpy(scalar: Union[int, float], x: Vector, y: Vector) -> Vector:
     """
         input: a 'scalar' and two vectors 'x' and 'y'
         output: a vector
         computes the axpy operation
     """
-    # precondition
-    assert(isinstance(x,Vector) and (isinstance(y,Vector)) \
-    and (isinstance(scalar,int) or isinstance(scalar,float)))
-    return (x*scalar + y)
-    
+    if not isinstance(x, Vector) or not isinstance(y, Vector):
+        raise TypeError("x and y must be Vector instances")
 
-def randomVector(N,a,b):
+    if not isinstance(scalar, (int, float)):
+        raise TypeError(f"Scalar must be int or float, got {type(scalar).__name__}")
+
+    if len(x) != len(y):
+        raise ValueError(f"Vectors must have same dimension: {len(x)} and {len(y)}")
+
+    return x * scalar + y
+
+
+def randomVector(size: int, lower_bound: int, upper_bound: int) -> Vector:
     """
         input: size (N) of the vector.
                random range (a,b)
         output: returns a random vector of size N, with 
                 random integer components between 'a' and 'b'.
     """
-    random.seed(None)
-    ans = [random.randint(a,b) for i in range(N)]
-    return Vector(ans)
+    if lower_bound > upper_bound:
+        raise ValueError(f"Lower bound ({lower_bound}) cannot be greater than upper bound ({upper_bound})")
+
+    components = [random.randint(lower_bound, upper_bound) for _ in range(size)]
+    return Vector(components)
 
 
 class Matrix(object):
@@ -217,28 +232,26 @@ class Matrix(object):
            operator + : implements the matrix-addition.
            operator - _ implements the matrix-subtraction
     """
-    def __init__(self,matrix,w,h):
+    def __init__(self, matrix: List[List[float]], width: int, height: int):
         """
             simple constructor for initialzes 
             the matrix with components.
         """
         self.__matrix = matrix
-        self.__width = w
-        self.__height = h
-    def __str__(self):
+        self.__width = width
+        self.__height = height
+
+    def __str__(self) -> str:
         """
             returns a string representation of this
             matrix.
         """
-        ans = ""
+        rows = []
         for i in range(self.__height):
-            ans += "|"
-            for j in range(self.__width):
-                if j < self.__width -1:
-                    ans += str(self.__matrix[i][j]) + ","
-                else:
-                    ans += str(self.__matrix[i][j]) + "|\n"
-        return ans
+            row_str = f"|{", ".join(str(self.__matrix)[i][j] for j in range(self.__width))}|"
+            rows.append(row_str)
+
+        return "\n".join(rows)
 
     def changeComponent(self, row: int, col: int, value: float) -> None:
         """
@@ -258,18 +271,19 @@ class Matrix(object):
 
         return self.__matrix[row][col]
 
-    def width(self):
+    def width(self) -> int:
         """
             getter for the width
         """
         return self.__width
-    def height(self):
+
+    def height(self) -> int:
         """
             getter for the height
         """
         return self.__height
 
-    def __mul__(self, other):
+    def __mul__(self, other: Union[Vector, int, float]) -> Union['Matrix', Vector]:
         """
             implements the matrix-vector multiplication.
             implements the matrix-scalar multiplication
@@ -278,18 +292,26 @@ class Matrix(object):
             if len(other) != self.__width:
                 raise ValueError(f"Vector dimension ({len(other)}) must match matrix width ({self.__width})")
 
-            ans = zeroVector(self.__height)
+            result = zeroVector(self.__height)
             for i in range(self.__height):
-                summe = 0
-                for j in range(self.__width):
-                    summe += other.component(j) * self.__matrix[i][j]
-                ans.changeComponent(i, summe)
-                summe = 0
-            return ans
+                row_sum = sum(self.__matrix[i][j] * other.component(j) for j in range(self.__width))
+                result.changeComponent(i, row_sum)
 
-        elif isinstance(other, int) or isinstance(other, float):  # Scalar multiplication
-            matrix = [[self.__matrix[i][j] * other for j in range(self.__width)] for i in range(self.__height)]
+            return result
+
+        elif isinstance(other, (int, float)):  # Scalar multiplication
+            matrix = [
+                [
+                    self.__matrix[i][j] * other
+                    for j in range(self.__width)
+                ]
+                for i in range(self.__height)
+            ]
+
             return Matrix(matrix, self.__width, self.__height)
+
+        else:
+            raise TypeError(f"Unsupported operand type(s) for *: 'Matrix' and '{type(other).__name__}'")
 
     def __add__(self, other: "Matrix") -> "Matrix":
         """
@@ -301,12 +323,14 @@ class Matrix(object):
                 f"{self.__height}x{self.__width} and {other.height}x{other.width}"
             )
 
-        matrix = []
-        for i in range(self.__height):
-            row = []
-            for j in range(self.__width):
-                row.append(self.__matrix[i][j] + other.component(i, j))
-            matrix.append(row)
+        matrix = [
+            [
+                self.__matrix[i][j] + other.component(i, j)
+                for j in range(self.__width)
+            ]
+            for i in range(self.__height)
+        ]
+
         return Matrix(matrix, self.__width, self.__height)
 
     def __sub__(self, other: "Matrix") -> "Matrix":
@@ -319,29 +343,45 @@ class Matrix(object):
                 f"{self.__height}x{self.__width} and {other.height}x{other.width}"
             )
 
-        matrix = []
-        for i in range(self.__height):
-            row = []
-            for j in range(self.__width):
-                row.append(self.__matrix[i][j] - other.component(i, j))
-            matrix.append(row)
+        matrix = [
+            [
+                self.__matrix[i][j] - other.component(i, j)
+                for j in range(self.__width)
+            ]
+            for i in range(self.__height)
+        ]
+
         return Matrix(matrix, self.__width, self.__height)
 
-def squareZeroMatrix(N):
+
+def squareZeroMatrix(size: int) -> Matrix:
     """
         returns a square zero-matrix of dimension NxN
     """
-    ans = [[0]*N for i in range(N)]
-    return Matrix(ans,N,N)
-    
-    
-def randomMatrix(W,H,a,b):
+    if size <= 0:
+        raise ValueError(f"Matrix size must be positive, got {size}")
+
+    matrix = [[0.0] * size for _ in range(size)]
+    return Matrix(matrix, size, size)
+
+
+def randomMatrix(width: int, height: int, lower_bound: int, upper_bound: int) -> Matrix:
     """
         returns a random matrix WxH with integer components
         between 'a' and 'b'
     """
-    random.seed(None)
-    matrix = [[random.randint(a,b) for j in range(W)] for i in range(H)]
-    return Matrix(matrix,W,H)
-            
-        
+    if width <= 0 or height <= 0:
+        raise ValueError(f"Matrix dimensions must be positive: {height}x{width}")
+
+    if lower_bound > upper_bound:
+        raise ValueError(f"Lower bound ({lower_bound}) cannot be greater than upper bound ({upper_bound})")
+
+    matrix = [
+        [
+            random.randint(lower_bound, upper_bound)
+            for _ in range(width)
+        ]
+        for _ in range(height)
+    ]
+
+    return Matrix(matrix, width, height)
