@@ -47,6 +47,12 @@ class Vector:
 
         self._components = list(components)
 
+    def __len__(self) -> int:
+        """
+        Return the number of components.
+        """
+        return len(self._components)
+
     def __str__(self) -> str:
         """
         Return string representation of the vector.
@@ -67,13 +73,18 @@ class Vector:
 
         return self._components[index]
 
-    def __len__(self) -> int:
+    def change_component(self, position: int, value: float) -> None:
         """
-        Return the number of components.
+        Change a specific component of the vector.
+        :param position: Index of component to change
+        :param value: New value
         """
-        return len(self._components)
+        if not -len(self) <= position < len(self):
+            raise IndexError(f"Position {position} out of range")
 
-    def eulid_length(self) -> float:
+        self._components[position] = value
+
+    def euclidean_length(self) -> float:
         """
         Calculate the Euclidean length of the vector.
         """
@@ -103,21 +114,39 @@ class Vector:
         result = [self._components[i] - other.component(i) for i in range(len(self))]
         return Vector(result)
 
+    def scalar_multiply(self, scalar: Union[int, float]) -> "Vector":
+        """
+        Scalar multiplication.
+        :param scalar: Scalar value
+        :return: New vector scaled by scalar
+        """
+        if not isinstance(scalar, (int, float)):
+            raise TypeError(f"Scalar must be int or float, got {type(scalar).__name__}")
+
+        return Vector([c * scalar for c in self._components])
+
+    def dot_product(self, other: "Vector") -> float:
+        """
+        Dot product with another vector.
+        :param other: Another vector
+        :return: Dot product result
+        """
+        if len(self) != len(other):
+            raise ValueError(f"Cannot compute dot product of vectors with different dimensions: "
+                             f"{len(self)} and {len(other)}")
+
+        return sum(self._components[i] * other.component(i) for i in range(len(self)))
+
     def __mul__(self, other: Union["Vector", int, float]) -> Union["Vector", float]:
         """
         Scalar multiplication or dot product.
         :param other: Either a scalar or another vector
         :return: Vector (if scalar multiplication) or float (if dot product)
         """
-        if isinstance(other, (int, float)):  # Scalar multiplication
-            return Vector([c * other for c in self._components])
-
-        elif isinstance(other, Vector):  # Dot product
-            if len(self) != len(other):
-                raise ValueError(f"Cannot compute dot product of vectors with different dimensions: "
-                                 f"{len(self)} and {len(other)}")
-
-            return sum(self._components[i] * other.component(i) for i in range(len(self)))
+        if isinstance(other, (int, float)):
+            return self.scalar_multiply(other)
+        elif isinstance(other, Vector):
+            return self.dot_product(other)
 
         raise TypeError(f"Unsupported operand type(s) for *: 'Vector' and '{type(other).__name__}'")
 
@@ -126,17 +155,6 @@ class Vector:
         Return a copy of this vector.
         """
         return Vector(self._components.copy())
-
-    def change_component(self, position: int, value: float) -> None:
-        """
-        Change a specific component of the vector.
-        :param position: Index of component to change
-        :param value: New value
-        """
-        if not -len(self._components) <= position < len(self._components):
-            raise IndexError(f"Position {position} out of range")
-
-        self._components[position] = value
 
 
 def zero_vector(dimension: int) -> Vector:
@@ -233,18 +251,6 @@ class Matrix:
 
         return "\n".join(rows)
 
-    def change_component(self, row: int, col: int, value: float) -> None:
-        """
-        Change a matrix component.
-        :param row: Row index (0-based)
-        :param col: Column index (0-based)
-        :param value: New value
-        """
-        if not (0 <= row < self._height and 0 <= col < self._width):
-            raise IndexError(f"Indices ({row}, {col}) out of bounds for {self._height}x{self._width} matrix")
-
-        self._matrix[row][col] = value
-
     def component(self, row: int, col: int) -> float:
         """
         Get a matrix component.
@@ -256,6 +262,18 @@ class Matrix:
             raise IndexError(f"Indices ({row}, {col}) out of bounds for {self._height}x{self._width} matrix")
 
         return self._matrix[row][col]
+
+    def change_component(self, row: int, col: int, value: float) -> None:
+        """
+        Change a matrix component.
+        :param row: Row index (0-based)
+        :param col: Column index (0-based)
+        :param value: New value
+        """
+        if not (0 <= row < self._height and 0 <= col < self._width):
+            raise IndexError(f"Indices ({row}, {col}) out of bounds for {self._height}x{self._width} matrix")
+
+        self._matrix[row][col] = value
 
     @property
     def width(self) -> int:
@@ -270,36 +288,6 @@ class Matrix:
         Get the number of rows.
         """
         return self._height
-
-    def __mul__(self, other: Union[Vector, int, float]) -> Union['Matrix', Vector]:
-        """
-        Matrix multiplication or scalar multiplication.
-        :param other: Vector (for matrix-vector multiplication) or scalar
-        :return: Matrix (if scalar multiplication) or Vector (if matrix-vector multiplication)
-        """
-        if isinstance(other, Vector):  # Matrix-vector multiplication
-            if len(other) != self._width:
-                raise ValueError(f"Vector dimension ({len(other)}) must match matrix width ({self._width})")
-
-            result = zero_vector(self._height)
-            for i in range(self._height):
-                row_sum = sum(self._matrix[i][j] * other.component(j) for j in range(self._width))
-                result.change_component(i, row_sum)
-
-            return result
-
-        elif isinstance(other, (int, float)):  # Scalar multiplication
-            matrix = [
-                [
-                    self._matrix[i][j] * other
-                    for j in range(self._width)
-                ]
-                for i in range(self._height)
-            ]
-
-            return Matrix(matrix, self._width, self._height)
-
-        raise TypeError(f"Unsupported operand type(s) for *: 'Matrix' and '{type(other).__name__}'")
 
     def __add__(self, other: "Matrix") -> "Matrix":
         """
@@ -344,6 +332,54 @@ class Matrix:
         ]
 
         return Matrix(matrix, self._width, self._height)
+
+    def scalar_multiply(self, scalar: Union[int, float]) -> "Matrix":
+        """
+        Scalar multiplication.
+        :param scalar: Scalar value
+        :return: New matrix scaled by scalar
+        """
+        if not isinstance(scalar, (int, float)):
+            raise TypeError(f"Scalar must be int or float, got {type(scalar).__name__}")
+
+        matrix = [
+            [
+                self._matrix[i][j] * scalar
+                for j in range(self._width)
+            ]
+            for i in range(self._height)
+        ]
+
+        return Matrix(matrix, self._width, self._height)
+
+    def vector_multiply(self, vector: Vector) -> Vector:
+        """
+        Matrix-vector multiplication.
+        :param vector: Vector to multiply
+        :return: Resulting vector
+        """
+        if len(vector) != self._width:
+            raise ValueError(f"Vector dimension ({len(vector)}) must match matrix width ({self._width})")
+
+        result = zero_vector(self._height)
+        for i in range(self._height):
+            row_sum = sum(self._matrix[i][j] * vector.component(j) for j in range(self._width))
+            result.change_component(i, row_sum)
+
+        return result
+
+    def __mul__(self, other: Union[Vector, int, float]) -> Union['Matrix', Vector]:
+        """
+        Matrix multiplication or scalar multiplication.
+        :param other: Vector (for matrix-vector multiplication) or scalar
+        :return: Matrix (if scalar multiplication) or Vector (if matrix-vector multiplication)
+        """
+        if isinstance(other, Vector):
+            return self.vector_multiply(other)
+        elif isinstance(other, (int, float)):
+            return self.scalar_multiply(other)
+
+        raise TypeError(f"Unsupported operand type(s) for *: 'Matrix' and '{type(other).__name__}'")
 
 
 def square_zero_matrix(size: int) -> Matrix:

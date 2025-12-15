@@ -27,9 +27,9 @@ class Test(unittest.TestCase):
         x = Vector([1, 2, 3, 4])
         self.assertEqual(len(x), 4)
 
-    def test_euclid_length(self):
+    def test_euclidean_length(self):
         x = Vector([1, 2])
-        self.assertAlmostEqual(x.eulid_length(), 2.236, 3)
+        self.assertAlmostEqual(x.euclidean_length(), 2.236, 3)
 
     def test__add__vector(self):
         x = Vector([1, 2, 3])
