@@ -313,10 +313,10 @@ class Matrix(BaseMatrix):
 
     def __str__(self) -> str:
         """Return a string representation of the matrix."""
-        rows = []
-        for i in range(self._height):
-            row_str = "|" + ", ".join(str(self._matrix[i][j]) for j in range(self._width)) + "|"
-            rows.append(row_str)
+        rows = [
+            "|" + ", ".join(str(self._matrix[i][j]) for j in range(self._width)) + "|"
+            for i in range(self._height)
+        ]
 
         return "\n".join(rows)
 
@@ -433,7 +433,7 @@ class Matrix(BaseMatrix):
 
         return result
 
-    def __mul__(self, other: Union[Vector, int, float]) -> Union['Matrix', Vector]:
+    def __mul__(self, other: Union[Vector, int, float]) -> Union["Matrix", Vector]:
         """
         Matrix multiplication or scalar multiplication.
         :param other: Vector (for matrix-vector multiplication) or scalar
