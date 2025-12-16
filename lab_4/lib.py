@@ -10,7 +10,8 @@ with linear algebra in python.
 
 Overview:
 
-- class Vector
+- class BaseVector(ABC)
+- class Vector(BaseVector)
 - class VectorFactory(ABC)
 - class ZeroVectorFactory(VectorFactory)
 - class UnitBasisVectorFactory(VectorFactory)
@@ -18,10 +19,11 @@ Overview:
 - function zero_vector(size)
 - function unit_basis_vector(size, position)
 - function random_vector(size, lower_bound, upper_bound)
-- class Matrix
+- class BaseMatrix(ABC)
+- class Matrix(BaseMatrix)
 - class MatrixFactory(ABC)
-- class SquareZeroMatrixFactory(MatrixFactory):
-- class RandomMatrixFactory(MatrixFactory):
+- class SquareZeroMatrixFactory(MatrixFactory)
+- class RandomMatrixFactory(MatrixFactory)
 - function square_zero_matrix(size)
 - function random_matrix(width, height, lower_bound, upper_bound)
 - function axpy(scalar, x, y)
@@ -34,7 +36,31 @@ from abc import ABC, abstractmethod
 from typing import List, Union
 
 
-class Vector:
+class BaseVector(ABC):
+    """Abstract base class for vectors."""
+
+    @abstractmethod
+    def __len__(self) -> int:
+        pass
+
+    @abstractmethod
+    def __str__(self) -> str:
+        pass
+
+    @abstractmethod
+    def component(self, index: int) -> float:
+        pass
+
+    @abstractmethod
+    def change_component(self, position: int, value: float) -> None:
+        pass
+
+    @abstractmethod
+    def copy(self) -> "BaseVector":
+        pass
+
+
+class Vector(BaseVector):
     """Represents a vector of arbitrary size."""
 
     def __init__(self, components: List[float] = None):
@@ -86,6 +112,10 @@ class Vector:
             raise IndexError(f"Position {position} out of range")
 
         self._components[position] = value
+
+    def copy(self) -> "Vector":
+        """Return a copy of this vector."""
+        return Vector(self._components.copy())
 
     def euclidean_length(self) -> float:
         """Calculate the Euclidean length of the vector."""
@@ -150,10 +180,6 @@ class Vector:
             return self.dot_product(other)
 
         raise TypeError(f"Unsupported operand type(s) for *: 'Vector' and '{type(other).__name__}'")
-
-    def copy(self) -> "Vector":
-        """Return a copy of this vector."""
-        return Vector(self._components.copy())
 
 
 class VectorFactory(ABC):
@@ -245,7 +271,33 @@ def random_vector(size: int, lower_bound: int, upper_bound: int) -> Vector:
     return RandomVectorFactory().create(size, lower_bound, upper_bound)
 
 
-class Matrix:
+class BaseMatrix(ABC):
+    """Abstract base class for matrices."""
+
+    @abstractmethod
+    def __str__(self) -> str:
+        pass
+
+    @abstractmethod
+    def component(self, row: int, col: int) -> float:
+        pass
+
+    @abstractmethod
+    def change_component(self, row: int, col: int, value: float) -> None:
+        pass
+
+    @property
+    @abstractmethod
+    def width(self) -> int:
+        pass
+
+    @property
+    @abstractmethod
+    def height(self) -> int:
+        pass
+
+
+class Matrix(BaseMatrix):
     """Represents a matrix of arbitrary dimensions."""
 
     def __init__(self, matrix: List[List[float]], width: int, height: int):
