@@ -11,25 +11,32 @@ with linear algebra in python.
 Overview:
 
 - class Vector
-- function zero_vector(dimension)
-- function unit_basis_vector(dimension, position)
-- function axpy(scalar, x, y)
+- class VectorFactory(ABC)
+- class ZeroVectorFactory(VectorFactory)
+- class UnitBasisVectorFactory(VectorFactory)
+- class RandomVectorFactory(VectorFactory)
+- function zero_vector(size)
+- function unit_basis_vector(size, position)
 - function random_vector(size, lower_bound, upper_bound)
 - class Matrix
+- class MatrixFactory(ABC)
+- class SquareZeroMatrixFactory(MatrixFactory):
+- class RandomMatrixFactory(MatrixFactory):
 - function square_zero_matrix(size)
 - function random_matrix(width, height, lower_bound, upper_bound)
+- function axpy(scalar, x, y)
 """
 
 
 import math
 import random
+from abc import ABC, abstractmethod
 from typing import List, Union
 
 
 class Vector:
-    """
-    Represents a vector of arbitrary size.
-    """
+    """Represents a vector of arbitrary size."""
+
     def __init__(self, components: List[float] = None):
         """
         Initialize vector with components.
@@ -48,15 +55,11 @@ class Vector:
         self._components = list(components)
 
     def __len__(self) -> int:
-        """
-        Return the number of components.
-        """
+        """Return the number of components."""
         return len(self._components)
 
     def __str__(self) -> str:
-        """
-        Return string representation of the vector.
-        """
+        """Return string representation of the vector."""
         return f"({", ".join(str(c) for c in self._components)})"
 
     def component(self, index: int) -> float:
@@ -85,9 +88,7 @@ class Vector:
         self._components[position] = value
 
     def euclidean_length(self) -> float:
-        """
-        Calculate the Euclidean length of the vector.
-        """
+        """Calculate the Euclidean length of the vector."""
         return math.sqrt(sum(c ** 2 for c in self._components))
 
     def __add__(self, other: "Vector") -> "Vector":
@@ -151,84 +152,102 @@ class Vector:
         raise TypeError(f"Unsupported operand type(s) for *: 'Vector' and '{type(other).__name__}'")
 
     def copy(self) -> "Vector":
-        """
-        Return a copy of this vector.
-        """
+        """Return a copy of this vector."""
         return Vector(self._components.copy())
 
 
-def zero_vector(dimension: int) -> Vector:
-    """
-    Create a zero vector of given dimension.
-    :param dimension: Size of the vector
-    :return: Zero vector of specified dimension
-    """
-    if not isinstance(dimension, int):
-        raise TypeError(f"Dimension must be an integer, got {type(dimension).__name__}")
+class VectorFactory(ABC):
+    """Abstract factory for creating vectors."""
 
-    if dimension <= 0:
-        raise ValueError(f"Dimension must be positive, got {dimension}")
-
-    return Vector([0] * dimension)
+    @abstractmethod
+    def create(self, *args, **kwargs) -> Vector:
+        pass
 
 
-def unit_basis_vector(dimension: int, position: int) -> Vector:
-    """
-    Create a unit basis vector.
-    :param dimension: Size of the vector
-    :param position: Index where the 1 should be placed (0-based)
-    :return: Unit basis vector
-    """
-    if not isinstance(dimension, int) or not isinstance(position, int):
-        raise TypeError("Both dimension and position must be integers")
+class ZeroVectorFactory(VectorFactory):
+    """Factory for creating zero vectors."""
 
-    if not 0 <= position < dimension:
-        raise IndexError(f"Position {position} out of range for dimension {dimension}")
+    def create(self, size: int) -> Vector:
+        """
+        Create a zero vector of given size.
+        :param size: Size of the vector
+        :return: Zero vector of specified size
+        """
+        if not isinstance(size, int):
+            raise TypeError(f"Vector size must be an integer, got {type(size).__name__}")
 
-    components = [0] * dimension
-    components[position] = 1
-    return Vector(components)
+        if size <= 0:
+            raise ValueError(f"Vector size must be positive, got {size}")
+
+        return Vector([0] * size)
 
 
-def axpy(scalar: Union[int, float], x: Vector, y: Vector) -> Vector:
-    """
-    Compute αx + y (AXPY operation).
-    :param scalar: Scalar α
-    :param x: First vector
-    :param y: Second vector
-    :return: Result of αx + y
-    """
-    if not isinstance(x, Vector) or not isinstance(y, Vector):
-        raise TypeError("x and y must be Vector instances")
+class UnitBasisVectorFactory(VectorFactory):
+    """Factory for creating unit basis vectors."""
 
-    if not isinstance(scalar, (int, float)):
-        raise TypeError(f"Scalar must be int or float, got {type(scalar).__name__}")
+    def create(self, size: int, position: int) -> Vector:
+        """
+        Create a unit basis vector.
+        :param size: Size of the vector
+        :param position: Index where the 1 should be placed (0-based)
+        :return: Unit basis vector
+        """
+        if not isinstance(size, int) or not isinstance(position, int):
+            raise TypeError("Both size and position must be integers")
 
-    if len(x) != len(y):
-        raise ValueError(f"Vectors must have same dimension: {len(x)} and {len(y)}")
+        if not 0 <= position < size:
+            raise IndexError(f"Position {position} out of range for size {size}")
 
-    return x * scalar + y
+        components = [0] * size
+        components[position] = 1
+        return Vector(components)
+
+
+class RandomVectorFactory(VectorFactory):
+    """Factory for creating random vectors."""
+
+    def create(self, size: int, lower_bound: int, upper_bound: int) -> Vector:
+        """
+        Generate a random vector.
+        :param size: Number of components
+        :param lower_bound: Minimum value for components
+        :param upper_bound: Maximum value for components
+        :return: Random vector with integer components
+        """
+        if not isinstance(size, int):
+            raise TypeError(f"Vector size must be an integer, got {type(size).__name__}")
+
+        if size <= 0:
+            raise ValueError(f"Vector size must be positive, got {size}")
+
+        if not isinstance(lower_bound, int) or not isinstance(upper_bound, int):
+            raise TypeError("Both lower bound and upper bound must be integers")
+
+        if lower_bound > upper_bound:
+            raise ValueError(f"Lower bound ({lower_bound}) cannot be greater than upper bound ({upper_bound})")
+
+        components = [random.randint(lower_bound, upper_bound) for _ in range(size)]
+        return Vector(components)
+
+
+def zero_vector(size: int) -> Vector:
+    """Wrapper function for backward compatibility."""
+    return ZeroVectorFactory().create(size)
+
+
+def unit_basis_vector(size: int, position: int) -> Vector:
+    """Wrapper function for backward compatibility."""
+    return UnitBasisVectorFactory().create(size, position)
 
 
 def random_vector(size: int, lower_bound: int, upper_bound: int) -> Vector:
-    """
-    Generate a random vector.
-    :param size: Number of components
-    :param lower_bound: Minimum value for components
-    :param upper_bound: Maximum value for components
-    :return: Random vector with integer components
-    """
-    if lower_bound > upper_bound:
-        raise ValueError(f"Lower bound ({lower_bound}) cannot be greater than upper bound ({upper_bound})")
-
-    components = [random.randint(lower_bound, upper_bound) for _ in range(size)]
-    return Vector(components)
+    """Wrapper function for backward compatibility."""
+    return RandomVectorFactory().create(size, lower_bound, upper_bound)
 
 
 class Matrix:
-    """
-    Represents a matrix of arbitrary dimensions.
-    """
+    """Represents a matrix of arbitrary dimensions."""
+
     def __init__(self, matrix: List[List[float]], width: int, height: int):
         """
         Initialize matrix with data.
@@ -241,9 +260,7 @@ class Matrix:
         self._height = height
 
     def __str__(self) -> str:
-        """
-        Return a string representation of the matrix.
-        """
+        """Return a string representation of the matrix."""
         rows = []
         for i in range(self._height):
             row_str = "|" + ", ".join(str(self._matrix[i][j]) for j in range(self._width)) + "|"
@@ -277,16 +294,12 @@ class Matrix:
 
     @property
     def width(self) -> int:
-        """
-        Get the number of columns.
-        """
+        """Get the number of columns."""
         return self._width
 
     @property
     def height(self) -> int:
-        """
-        Get the number of rows.
-        """
+        """Get the number of rows."""
         return self._height
 
     def __add__(self, other: "Matrix") -> "Matrix":
@@ -382,41 +395,93 @@ class Matrix:
         raise TypeError(f"Unsupported operand type(s) for *: 'Matrix' and '{type(other).__name__}'")
 
 
-def square_zero_matrix(size: int) -> Matrix:
-    """
-    Create a square zero matrix.
-    :param size: Dimension of the matrix (size x size)
-    :return: Zero matrix of specified size
-    """
-    if size <= 0:
-        raise ValueError(f"Matrix size must be positive, got {size}")
+class MatrixFactory(ABC):
+    """Abstract factory for creating matrices."""
 
-    matrix = [[0] * size for _ in range(size)]
-    return Matrix(matrix, size, size)
+    @abstractmethod
+    def create(self, *args, **kwargs) -> Matrix:
+        pass
+
+
+class SquareZeroMatrixFactory(MatrixFactory):
+    """Factory for creating square zero matrices."""
+
+    def create(self, size: int) -> Matrix:
+        """
+        Create a square zero matrix.
+        :param size: Dimension of the matrix (size x size)
+        :return: Zero matrix of specified size
+        """
+        if not isinstance(size, int):
+            raise TypeError(f"Matrix size must be an integer, got {type(size).__name__}")
+
+        if size <= 0:
+            raise ValueError(f"Matrix size must be positive, got {size}")
+
+        matrix = [[0] * size for _ in range(size)]
+        return Matrix(matrix, size, size)
+
+
+class RandomMatrixFactory(MatrixFactory):
+    """Factory for creating random matrices."""
+
+    def create(self, width: int, height: int, lower_bound: int, upper_bound: int) -> Matrix:
+        """
+        Generate a random matrix.
+        :param width: Number of columns
+        :param height: Number of rows
+        :param lower_bound: Minimum value for elements
+        :param upper_bound: Maximum value for elements
+        :return: Random matrix with integer elements
+        """
+        if not isinstance(width, int) or not isinstance(height, int):
+            raise TypeError("Matrix dimensions must be integers")
+
+        if width <= 0 or height <= 0:
+            raise ValueError(f"Matrix dimensions must be positive: {height}x{width}")
+
+        if not isinstance(lower_bound, int) or not isinstance(upper_bound, int):
+            raise TypeError("Both lower bound and upper bound must be integers")
+
+        if lower_bound > upper_bound:
+            raise ValueError(f"Lower bound ({lower_bound}) cannot be greater than upper bound ({upper_bound})")
+
+        matrix = [
+            [
+                random.randint(lower_bound, upper_bound)
+                for _ in range(width)
+            ]
+            for _ in range(height)
+        ]
+
+        return Matrix(matrix, width, height)
+
+
+def square_zero_matrix(size: int) -> Matrix:
+    """Wrapper function for backward compatibility."""
+    return SquareZeroMatrixFactory().create(size)
 
 
 def random_matrix(width: int, height: int, lower_bound: int, upper_bound: int) -> Matrix:
+    """Wrapper function for backward compatibility."""
+    return RandomMatrixFactory().create(width, height, lower_bound, upper_bound)
+
+
+def axpy(scalar: Union[int, float], x: Vector, y: Vector) -> Vector:
     """
-    Generate a random matrix.
-    :param width: Number of columns
-    :param height: Number of rows
-    :param lower_bound: Minimum value for elements
-    :param upper_bound: Maximum value for elements
-    :return: Random matrix with integer elements
+    Compute αx + y (AXPY operation).
+    :param scalar: Scalar α
+    :param x: First vector
+    :param y: Second vector
+    :return: Result of αx + y
     """
+    if not isinstance(x, Vector) or not isinstance(y, Vector):
+        raise TypeError("x and y must be Vector instances")
 
-    if width <= 0 or height <= 0:
-        raise ValueError(f"Matrix dimensions must be positive: {height}x{width}")
+    if not isinstance(scalar, (int, float)):
+        raise TypeError(f"Scalar must be int or float, got {type(scalar).__name__}")
 
-    if lower_bound > upper_bound:
-        raise ValueError(f"Lower bound ({lower_bound}) cannot be greater than upper bound ({upper_bound})")
+    if len(x) != len(y):
+        raise ValueError(f"Vectors must have same dimension: {len(x)} and {len(y)}")
 
-    matrix = [
-        [
-            random.randint(lower_bound, upper_bound)
-            for _ in range(width)
-        ]
-        for _ in range(height)
-    ]
-
-    return Matrix(matrix, width, height)
+    return x * scalar + y
