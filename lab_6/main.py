@@ -12,15 +12,14 @@ def encrypt_trithemius(text: str, alphabet: str, key: str) -> str:
     if not alphabet:
         raise ValueError("Alphabet is empty")
 
-    alphabet = alphabet.lower()
-
     if not key:
         raise ValueError("Key is empty")
 
-    key = key.lower()
-
-    if not all(c in alphabet for c in key):
+    if not all(c in alphabet.lower() for c in key.lower()):
         raise ValueError("Key must contain characters from alphabet")
+
+    alphabet = alphabet.lower()
+    key = key.lower()
 
     extended_key = key * (len(text) // len(key))
     if len(extended_key) != len(text):
@@ -56,15 +55,14 @@ def decrypt_trithemius(text: str, alphabet: str, key: str) -> str:
     if not alphabet:
         raise ValueError("Alphabet is empty")
 
-    alphabet = alphabet.lower()
-
     if not key:
         raise ValueError("Key is empty")
 
-    key = key.lower()
-
-    if not all(c in alphabet for c in key):
+    if not all(c in alphabet.lower() for c in key.lower()):
         raise ValueError("Key must contain characters from alphabet")
+
+    alphabet = alphabet.lower()
+    key = key.lower()
 
     extended_key = key * (len(text) // len(key))
     if len(extended_key) != len(text):
