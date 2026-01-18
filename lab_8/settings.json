@@ -1,0 +1,5 @@
+{
+  "CSV_FILE": "./urls.csv",
+  "OUTPUT": "./downloads",
+  "CONCURRENT": 20
+}
