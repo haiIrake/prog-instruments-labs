@@ -186,3 +186,21 @@ class AsyncImageDownloader:
             logger.info(f"Download completed. Images saved to {self.output_dir.absolute()}")
         except Exception as e:
             logger.error(f"Critical error: {e}")
+
+
+def main():
+    try:
+        source = load_config("settings.json")
+
+        downloader = AsyncImageDownloader(
+            max_concurrent=source["CONCURRENT"],
+            output_dir=source["OUTPUT"]
+        )
+
+        downloader.download_from_csv(source["CSV_FILE"])
+    except Exception as e:
+        logger.error(f"Error: {e}")
+
+
+if __name__ == "__main__":
+    main()
